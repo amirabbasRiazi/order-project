@@ -1,5 +1,10 @@
 ## Order Statistics Tool for Dott
 
+### This tool analyzes Dott order data to provide insights into sales trends based on product age. It empowers you to:
+ * Filter orders by date intervals to focus on specific periods.
+ * Group orders by product age to understand how product age impacts sales.
+
+
 ### Key Features:
   * Data Filtering and Grouping: Filters orders based on date intervals and groups them by product age to reveal sales trends.
   * Customizable Intervals: Supports both default and custom age intervals for flexible analysis.
