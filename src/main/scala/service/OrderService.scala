@@ -24,8 +24,9 @@ class OrderService(repository: OrderRepository)(implicit ec: ExecutionContext) {
 
 
   def groupOrdersByProductAge(orders: Seq[OrderDTO], intervals: Seq[(Int, Int)]): Map[(Int, Int), Int] = {
-    orders.map {order =>
-      (order.items.map(_.product).minBy(_.registeredDate), order)}
+    orders.map { order =>
+      (order.items.map(_.product).minBy(_.registeredDate), order)
+    }
       .groupBy { case (product, order) =>
         val months = calculateProductAgeMonths(
           product.registeredDate.toLocalDateTime,
@@ -57,7 +58,7 @@ class OrderService(repository: OrderRepository)(implicit ec: ExecutionContext) {
       }
       .getOrElse {
         if (months > 12) 13 -> 12
-        else (0,0)
+        else (0, 0)
       }
   }
 }
