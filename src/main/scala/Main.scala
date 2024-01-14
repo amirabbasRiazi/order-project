@@ -49,8 +49,14 @@ object Main {
     Await.result(
       orderService.getOrderCount(dateFrom, dateTo, intervals),
       5.seconds
-    ).foreach {
+    ).filterNot {
+      case ((lower, _), _) =>
+        lower == 0
+    }.foreach {
       case (months, ordersInInterval) =>
+        if (months == (13 -> 12)) {
+          println(s"(>12) months: ${ordersInInterval} orders")
+        } else
         println(s"$months months: ${ordersInInterval} orders")
     }
   }

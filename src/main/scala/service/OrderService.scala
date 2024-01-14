@@ -10,7 +10,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class OrderService(repository: OrderRepository)(implicit ec: ExecutionContext) {
 
-  def getOrderCount(dateFrom: Timestamp, dateTo: Timestamp, intervals: Seq[(Int, Int)]): Future[Map[String, Int]] =
+  def getOrderCount(dateFrom: Timestamp, dateTo: Timestamp, intervals: Seq[(Int, Int)]): Future[Map[(Int, Int), Int]] =
     for {
       orders <- repository.findByInterval(dateFrom, dateTo)
       orderDTOs = orders.groupBy { case ((order, _), _) => order }
@@ -23,7 +23,7 @@ class OrderService(repository: OrderRepository)(implicit ec: ExecutionContext) {
     } yield result
 
 
-  def groupOrdersByProductAge(orders: Seq[OrderDTO], intervals: Seq[(Int, Int)]): Map[String, Int] = {
+  def groupOrdersByProductAge(orders: Seq[OrderDTO], intervals: Seq[(Int, Int)]): Map[(Int, Int), Int] = {
     orders.map {order =>
       (order.items.map(_.product).minBy(_.registeredDate), order)}
       .groupBy { case (product, order) =>
@@ -31,16 +31,21 @@ class OrderService(repository: OrderRepository)(implicit ec: ExecutionContext) {
           product.registeredDate.toLocalDateTime,
           order.registeredDate.toLocalDateTime)
         determineIntervalLabel(months, intervals)
-      }
-      .view.mapValues(_.length)
-  }.toMap - "-"
+      }.toSeq.map {
+      case ((lower, upper), orders) =>
+        (lower -> upper, orders.length)
+    }.sortBy {
+      case ((lower, _), _) =>
+        lower
+    }.toMap
+  }
 
 
   def calculateProductAgeMonths(dateOne: LocalDateTime, dateTwo: LocalDateTime): Long = {
     ChronoUnit.MONTHS.between(dateOne, dateTwo)
   }
 
-  def determineIntervalLabel(months: Long, intervals: Seq[(Int, Int)]): String = {
+  def determineIntervalLabel(months: Long, intervals: Seq[(Int, Int)]): (Int, Int) = {
     intervals
       .find {
         case (lower, upper) =>
@@ -48,11 +53,11 @@ class OrderService(repository: OrderRepository)(implicit ec: ExecutionContext) {
       }
       .map {
         case (lower, upper) =>
-          s"${lower}-${upper}"
+          lower -> upper
       }
       .getOrElse {
-        if (months > 12) "> 12"
-        else "-"
+        if (months > 12) 13 -> 12
+        else (0,0)
       }
   }
 }

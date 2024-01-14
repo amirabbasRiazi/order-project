@@ -29,5 +29,4 @@ class OrderRepositoryImpl(db: Database) extends OrderRepository {
         }
         .result
     }
-  }
 }
