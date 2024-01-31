@@ -8,6 +8,7 @@ import java.time.Instant
 import java.util.concurrent.Executors
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{Await, ExecutionContext}
+import scala.io.StdIn.readLine
 import scala.util.Try
 
 object Main {
@@ -24,19 +25,22 @@ object Main {
 
     lazy val orderService = new OrderService(new OrderRepositoryImpl(DatabaseProvider.db))
 
+    val strDates = readLine("Enter the time period: ").split(",")
+    val strFilters = readLine("Enter the filters(optional): ").split(",")
+
+
     val dateFrom = Try(
-      parseTimestamp(args(0)))
+      parseTimestamp(strDates(0)))
       .toOption
       .getOrElse(defaultDate)
 
 
     val dateTo = Try(
-      parseTimestamp(args(1)))
+      parseTimestamp(strDates(1)))
       .toOption
       .getOrElse(Timestamp.from(Instant.now()))
 
-    val intervals = args.
-      drop(2)
+    val intervals = strFilters
       .map(_.split("-").map(_.toInt))
       .map(interval => interval(0) -> interval(1))
       .toSeq match {
